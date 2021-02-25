@@ -15,9 +15,11 @@ repositories {
 
 ext {
   vertxVersion = "4.0.2"
+  micronautVersion = "2.3.3"
   junitJupiterVersion = "5.7.0"
+  mockitoVersion = "3.8.0"
 
-  mainVerticleName = "com.masmovil.phoneapp.MainVerticle"
+  mainVerticleName = "com.masmovil.phoneapp.RestfulVerticle"
   launcherClassName = "io.vertx.core.Launcher"
 }
 
@@ -36,14 +38,30 @@ dependencies {
   compile "io.vertx:vertx-config"
   compile "io.vertx:vertx-config-yaml"
 
+  // Vertx Postgres JDBC
+  implementation "io.vertx:vertx-pg-client"
+
+  // IoC
+  implementation "io.micronaut:micronaut-inject-java:$micronautVersion"
+  annotationProcessor "io.micronaut:micronaut-inject-java:$micronautVersion"
+
   // String Utils
   implementation "org.apache.commons:commons-lang3:3.11"
 
   // Preconditions
   implementation "com.google.guava:guava:23.0"
 
+  // DataBase Migration
+  implementation("org.flywaydb:flyway-core:5.2.4")
+  implementation("org.postgresql:postgresql:42.2.12")
+
+  // -- TEST --
   testImplementation "io.vertx:vertx-junit5"
   testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+  testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+  testImplementation "org.mockito:mockito-core:$mockitoVersion"
+  testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+
 }
 
 shadowJar {
