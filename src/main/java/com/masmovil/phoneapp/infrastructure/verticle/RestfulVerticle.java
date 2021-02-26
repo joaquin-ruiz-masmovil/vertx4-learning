@@ -1,5 +1,7 @@
-package com.masmovil.phoneapp;
+package com.masmovil.phoneapp.infrastructure.verticle;
 
+import com.masmovil.phoneapp.infrastructure.configuration.ConfigurationProperties;
+import com.masmovil.phoneapp.infrastructure.configuration.FlywayConfiguration;
 import com.masmovil.phoneapp.infrastructure.routehandler.PhoneCatalogRestHandler;
 import io.micronaut.context.BeanContext;
 import io.reactivex.Completable;
@@ -19,7 +21,6 @@ import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.pgclient.PgPool;
 import io.vertx.reactivex.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import org.flywaydb.core.Flyway;
 
 import java.util.Map;
 
@@ -28,13 +29,26 @@ public class RestfulVerticle extends AbstractVerticle {
   private static final Logger LOGGER = LoggerFactory.getLogger(RestfulVerticle.class);
 
   private static final String CONFIGURATION_FILE_PATH = "src/main/resources/config.yaml";
+  private static final String CONFIGURATION_TYPE = "file";
+  private static final String CONFIGURATION_FILE_FORMAT = "yaml";
 
   private static final String PHONES_PATH = "/v1/phones";
   private static final String COSTUMER_ORDER_PATH = "/v1/order";
 
+  private final String configurationFilePath;
+
   private BeanContext context;
 
   private PgPool pgPool;
+
+  public RestfulVerticle(String configurationFilePath) {
+    this.configurationFilePath = configurationFilePath;
+  }
+
+  public RestfulVerticle() {
+    this.configurationFilePath = CONFIGURATION_FILE_PATH;
+  }
+
 
   @Override
   public Completable rxStart() {
@@ -58,9 +72,9 @@ public class RestfulVerticle extends AbstractVerticle {
         .setScanPeriod(2000)
         .addStore(
           new ConfigStoreOptions()
-            .setType("file")
-            .setFormat("yaml")
-            .setConfig(new JsonObject().put("path", CONFIGURATION_FILE_PATH))
+            .setType(CONFIGURATION_TYPE)
+            .setFormat(CONFIGURATION_FILE_FORMAT)
+            .setConfig(new JsonObject().put("path", configurationFilePath))
         )
     ).rxGetConfig();
   }
@@ -68,16 +82,21 @@ public class RestfulVerticle extends AbstractVerticle {
 
   private Single<JsonObject> executeDBMigration(JsonObject config) {
 
+    return new FlywayConfiguration(config).executeDBMigration();
+
+    /*
     Flyway flyway = Flyway.configure()
-      .dataSource(config.getString("postgres.uri"),
-        config.getString("postgres.user"),
-        config.getString("postgres.pass"))
+      .dataSource(config.getString(ConfigurationProperties.DATABASE_URI),
+        config.getString(ConfigurationProperties.DATABASE_USER),
+        config.getString(ConfigurationProperties.DATABASE_PASS))
       .load();
     flyway.migrate();
 
-    LOGGER.info("Flyway Migrating DB: " + config.getString("postgres.uri"));
+    LOGGER.info("Flyway Migrating DB: " + config.getString(ConfigurationProperties.DATABASE_URI));
 
     return Single.just(config);
+    */
+
   }
 
   private Single<JsonObject> configureDBPool(JsonObject config) {
@@ -85,10 +104,10 @@ public class RestfulVerticle extends AbstractVerticle {
     LOGGER.info("Configuring Pool DB");
 
     this.pgPool = PgPool.pool(Vertx.currentContext().owner(), new PgConnectOptions()
-        .setDatabase(config.getString("postgres.db"))
-        .setUser(config.getString("postgres.user"))
-        .setPassword(config.getString("postgres.pass"))
-        .setProperties(Map.of("search_path", config.getString("postgres.schema"))),
+        .setDatabase(config.getString(ConfigurationProperties.DATABASE_NAME))
+        .setUser(config.getString(ConfigurationProperties.DATABASE_USER))
+        .setPassword(config.getString(ConfigurationProperties.DATABASE_PASS))
+        .setProperties(Map.of("search_path", config.getString(ConfigurationProperties.DATABASE_SCHEMA))),
       new PoolOptions().setMaxSize(30));
 
     return Single.just(config);
@@ -134,6 +153,5 @@ public class RestfulVerticle extends AbstractVerticle {
       });
 
   }
-
 
 }
