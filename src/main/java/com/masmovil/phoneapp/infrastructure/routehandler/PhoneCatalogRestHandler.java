@@ -39,7 +39,7 @@ public class PhoneCatalogRestHandler implements Handler<RoutingContext> {
 
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
-      event.response().setStatusCode(500).end();
+      event.response().setStatusCode(500).end(e.getMessage());
     }
 
   }
