@@ -6,7 +6,7 @@ on:
     # explicity override here so that PR titles are re-linted when the PR text content is edited.
     #
     # Possible values: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
-    types: [opened, edited, reopened]
+    types: [opened]
 
 jobs:
   apply-label:
@@ -20,6 +20,33 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            labels: ['mas-consents']
+            labels: ['mas-consents'],
+            body: '### New Version *(at version.bzl)*: `vX.Y.Z`\r\n' +
+                    '- [X] Upgrade\r\n' +
+                    '- [ ] Downgrade\r\n' +
+                    '\r\n' +
+                    '### Background/Context of PR\r\n' +
+                    '...\r\n' +
+                    '\r\n' +
+                    "### Related Jira's\r\n" +
+                    '...\r\n' +
+                    '\r\n' +
+                    "### Related Infrastructure PR's\r\n" +
+                    '- [ ] No\r\n' +
+                    '- [ ] Yes -> [Add link to PR](https://github.com/masmovil/kubernetes-clusters)\r\n' +
+                    '\r\n' +
+                    '### Implementation notes\r\n' +
+                    '...\r\n' +
+                    '\r\n' +
+                    '### Further considerations\r\n' +
+                    '...\r\n' +
+                    '\r\n' +
+                    '### Checklist\r\n' +
+                    '- [ ] The PR relates to *only* one subject with a clear title.\r\n' +
+                    '- [ ] I have modified the version\r\n' +
+                    '- [ ] I have made corresponding changes to the documentation (included swagger API contract)\r\n' +
+                    '- [ ] I have added tests that prove my fix is effective or that my feature works\r\n' +
+                    '- [ ] I have updated prometheus metrics\r\n' +
+                    '\r\n'
           })
-          console.log(context)
+
