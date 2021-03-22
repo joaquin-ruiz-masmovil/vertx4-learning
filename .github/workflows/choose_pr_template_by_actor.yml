@@ -1,8 +1,9 @@
-name:
+name: GitHub Pull Request Template By Actor
 
 on:
   pull_request:
-    types: [ opened ]
+    branches:
+      - master
 
 jobs:
   pull-request:
@@ -23,6 +24,6 @@ jobs:
           pr_reviewer: "joaquin-ruiz-masmovil,fothdev"      # Comma-separated list (no spaces)
           pr_assignee: "joaquin-ruiz-masmovil,fothdev"      # Comma-separated list (no spaces)
           pr_label: "mas-consents"                          # Comma-separated list (no spaces)
-          pr_draft: true                                    # Creates pull request as draft
+          pr_draft: false                                   # Creates pull request as draft
           pr_allow_empty: false                             # Creates pull request even if there are no changes
           github_token: "${{ secrets.GITHUB_TOKEN }}"
