@@ -2,51 +2,86 @@ name: Add label
 
 on:
   pull_request:
-    # By default, a workflow only runs when a pull_request's activity type is opened, synchronize, or reopened. We
-    # explicity override here so that PR titles are re-linted when the PR text content is edited.
-    #
-    # Possible values: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
-    types: [opened]
+    branches:
+      - master
+    type:
+      - [opened, labeled]
 
 jobs:
+  log-context:
+    runs-on: ubuntu-16.04
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo "$JOB_CONTEXT"
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo "$STEPS_CONTEXT"
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        run: echo "$STRATEGY_CONTEXT"
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: echo "$MATRIX_CONTEXT"
   apply-label:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/github-script@v3
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          github.issues.addLabels({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: ['mas-consents'],
-            body: '### New Version *(at version.bzl)*: `vX.Y.Z`\r\n' +
-                    '- [X] Upgrade\r\n' +
-                    '- [ ] Downgrade\r\n' +
-                    '\r\n' +
-                    '### Background/Context of PR\r\n' +
-                    '...\r\n' +
-                    '\r\n' +
-                    "### Related Jira's\r\n" +
-                    '...\r\n' +
-                    '\r\n' +
-                    "### Related Infrastructure PR's\r\n" +
-                    '- [ ] No\r\n' +
-                    '- [ ] Yes -> [Add link to PR](https://github.com/masmovil/kubernetes-clusters)\r\n' +
-                    '\r\n' +
-                    '### Implementation notes\r\n' +
-                    '...\r\n' +
-                    '\r\n' +
-                    '### Further considerations\r\n' +
-                    '...\r\n' +
-                    '\r\n' +
-                    '### Checklist\r\n' +
-                    '- [ ] The PR relates to *only* one subject with a clear title.\r\n' +
-                    '- [ ] I have modified the version\r\n' +
-                    '- [ ] I have made corresponding changes to the documentation (included swagger API contract)\r\n' +
-                    '- [ ] I have added tests that prove my fix is effective or that my feature works\r\n' +
-                    '- [ ] I have updated prometheus metrics\r\n' +
-                    '\r\n'
-          })
-
+      - uses: actions/github-script@v3
+        if: ${{ github.actor == 'joaquin-ruiz-masmovil'}}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['mas-consents'],
+              body: '### New Version *(at version.bzl)*: `vX.Y.Z`\r\n' +
+                      '- [X] Upgrade\r\n' +
+                      '- [ ] Downgrade\r\n' +
+                      '\r\n' +
+                      '### Background/Context of PR\r\n' +
+                      '...\r\n' +
+                      '\r\n' +
+                      "### Related Jira's\r\n" +
+                      '...\r\n' +
+                      '\r\n' +
+                      "### Related Infrastructure PR's\r\n" +
+                      '- [ ] No\r\n' +
+                      '- [ ] Yes -> [Add link to PR](https://github.com/masmovil/kubernetes-clusters)\r\n' +
+                      '\r\n' +
+                      '### Implementation notes\r\n' +
+                      '...\r\n' +
+                      '\r\n' +
+                      '### Further considerations\r\n' +
+                      '...\r\n' +
+                      '\r\n' +
+                      '### Checklist\r\n' +
+                      '- [ ] The PR relates to *only* one subject with a clear title.\r\n' +
+                      '- [ ] I have modified the version\r\n' +
+                      '- [ ] I have made corresponding changes to the documentation (included swagger API contract)\r\n' +
+                      '- [ ] I have added tests that prove my fix is effective or that my feature works\r\n' +
+                      '- [ ] I have updated prometheus metrics\r\n' +
+                      '\r\n'
+            })
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Send Review Request"
+        if: github.actor == 'joaquin-ruiz-masmovil'
+        uses: kunihiko-t/review-request-action@v0.1.3
+        with:
+          repo-token: ${{ secrets.TOKEN }}
+          reviewers: "fothdev"
