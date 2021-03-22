@@ -1,8 +1,7 @@
 name: Add label
 
 on:
-  pull_request:
-    branches: [main]
+  issues:
     types: [opened]
 
 jobs:
