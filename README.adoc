@@ -1,4 +1,4 @@
-= Vertx4
+= Vertx4 Testing
 
 image:https://img.shields.io/badge/vert.x-4.0.2-purple.svg[link="https://vertx.io"]
 
@@ -27,5 +27,4 @@ To run your application:
 * https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
 * https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
 * https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
-
 
