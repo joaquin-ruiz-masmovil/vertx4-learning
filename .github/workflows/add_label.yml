@@ -33,11 +33,20 @@ jobs:
         env:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         run: echo "$MATRIX_CONTEXT"
+  reviewer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Send Review Request"
+        if: github.actor == 'joaquin-ruiz-masmovil'
+        uses: kunihiko-t/review-request-action@v0.1.3
+        with:
+          repo-token: ${{ secrets.TOKEN }}
+          reviewers: "fothdev"
   apply-label:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v3
-        if: ${{ github.actor == 'joaquin-ruiz-masmovil'}}
+        if: ${{ github.actor == 'joaquin-ruiz-masmovil' }}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -74,12 +83,4 @@ jobs:
                       '- [ ] I have updated prometheus metrics\r\n' +
                       '\r\n'
             })
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Send Review Request"
-        if: github.actor == 'joaquin-ruiz-masmovil'
-        uses: kunihiko-t/review-request-action@v0.1.3
-        with:
-          repo-token: ${{ secrets.TOKEN }}
-          reviewers: "fothdev"
+
