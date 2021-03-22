@@ -2,8 +2,7 @@ name: Add label
 
 on:
   pull_request:
-    type:
-      - [opened, edited, labeled]
+    types: [opened, edited, reopened, labeled]
 
 jobs:
   log-context:
