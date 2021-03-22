@@ -2,10 +2,8 @@ name: Add label
 
 on:
   pull_request:
-    branches:
-      - master
     type:
-      - [opened, labeled]
+      - [opened, edited, labeled]
 
 jobs:
   log-context:
