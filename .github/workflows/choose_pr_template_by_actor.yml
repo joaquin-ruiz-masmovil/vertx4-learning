@@ -3,7 +3,7 @@ name: Github Action to choose PR template by Actor
 on:
   pull_request:
     path:
-      - '**.md'
+    - '**.md'
 
 jobs:
   pull-request:
