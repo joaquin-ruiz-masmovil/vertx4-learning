@@ -1,0 +1,25 @@
+name: pr-lint
+
+on:
+  pull_request:
+    # By default, a workflow only runs when a pull_request's activity type is opened, synchronize, or reopened. We
+    # explicity override here so that PR titles are re-linted when the PR text content is edited.
+    #
+    # Possible values: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
+    types: [opened, edited, reopened]
+
+jobs:
+  check-title-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: morrisoncole/pr-lint-action@v1.4.1
+        with:
+          title-regex: "^(feat|task|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\\(.*\\): ([A-Z]{0,12}-([0-9]{1,6}|XXX)) (.*)$"
+          on-failed-regex-fail-action: true
+          on-failed-regex-request-changes: false
+          on-failed-regex-create-review: false
+          on-failed-regex-comment: | 
+            The PR title is not following the contribution guidelines. 
+            Check https://github.com/masmovil/mas-stack/blob/master/CONTRIBUTING.md
+            Failed regex: `%regex%`!
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
