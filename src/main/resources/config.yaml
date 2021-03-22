@@ -1,0 +1,7 @@
+server.port: 8000
+
+postgres.uri: jdbc:postgresql://0.0.0.0:5432/postgres?currentSchema=phonecatalog
+postgres.user: postgres
+postgres.pass: postgres
+postgres.db: postgres
+postgres.schema: phonecatalog

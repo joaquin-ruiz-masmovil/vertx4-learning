@@ -2,6 +2,8 @@ plugins {
   id 'java'
   id 'application'
   id 'com.github.johnrengelman.shadow' version '6.1.0'
+  id "jacoco"
+  id "com.avast.gradle.docker-compose" version '0.14.0'
 }
 
 group = "com.masmovil"
@@ -13,11 +15,25 @@ repositories {
   mavenCentral()
 }
 
+configurations {
+  integrationtestImplementation.extendsFrom testImplementation
+  integrationtestTestRuntimeClasspath.extendsFrom testRuntimeClasspath
+}
+
+sourceSets {
+  integrationtest {
+    compileClasspath += main.output + test.output
+    runtimeClasspath += main.output + test.output
+  }
+}
+
 ext {
   vertxVersion = "4.0.2"
+  micronautVersion = "2.3.3"
   junitJupiterVersion = "5.7.0"
+  mockitoVersion = "3.8.0"
 
-  mainVerticleName = "com.masmovil.phoneapp.MainVerticle"
+  mainVerticleName = "com.masmovil.phoneapp.infrastructure.verticle.RestfulVerticle"
   launcherClassName = "io.vertx.core.Launcher"
 }
 
@@ -36,14 +52,56 @@ dependencies {
   compile "io.vertx:vertx-config"
   compile "io.vertx:vertx-config-yaml"
 
+  // Vertx Postgres JDBC
+  implementation "io.vertx:vertx-pg-client"
+
+  // IoC
+  implementation "io.micronaut:micronaut-inject-java:$micronautVersion"
+  annotationProcessor "io.micronaut:micronaut-inject-java:$micronautVersion"
+
   // String Utils
   implementation "org.apache.commons:commons-lang3:3.11"
 
   // Preconditions
   implementation "com.google.guava:guava:23.0"
 
+  // DataBase Migration
+  implementation("org.flywaydb:flyway-core:5.2.4")
+  implementation("org.postgresql:postgresql:42.2.12")
+
+  // -- TEST --
   testImplementation "io.vertx:vertx-junit5"
   testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+  testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+  testImplementation "org.mockito:mockito-core:$mockitoVersion"
+  testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+
+}
+
+task integrationtest(type: Test) {
+
+  testClassesDirs = sourceSets.integrationtest.output.classesDirs
+  classpath = sourceSets.integrationtest.runtimeClasspath
+
+  doFirst {
+    dockerCompose.exposeAsEnvironment(integrationtest)
+    dockerCompose.exposeAsSystemProperties(integrationtest)
+  }
+  mustRunAfter(test)
+
+}
+
+check.dependsOn(integrationtest)
+
+dockerCompose.isRequiredBy(integrationtest)
+
+dockerCompose {
+  useComposeFiles = ['docker-compose.yml'] // like 'docker-compose -f <file>'
+  captureContainersOutput = true // prints output of all containers to Gradle output - very useful for debugging
+  stopContainers = true // doesn't call `docker-compose down` - useful for debugging
+  removeContainers = true
+  removeOrphans = true
+  upAdditionalArgs = ['--force-recreate']
 }
 
 shadowJar {
@@ -59,6 +117,10 @@ tasks.withType(JavaCompile) {
 }
 
 test {
+  useJUnitPlatform()
+}
+
+integrationtest {
   useJUnitPlatform()
 }
 
@@ -86,6 +148,8 @@ tasks.withType(Test) {
     }
   }
 }
+
+
 
 run {
   args = ['run', mainVerticleName,
