@@ -1,0 +1,4 @@
+- regExp: "^src/main/"
+  labels: ["code"]
+- regExp: "^src/test/"
+  labels: ["test"]
